@@ -57,58 +57,19 @@ def update_about_user_memory(text: str, emotions: Dict[str, float], about_user: 
     
     return updated_about
 
-def update_psychoanalysis_memory(text: str, emotions: Dict[str, float]) -> Dict[str, Any]:
-    prompt = f"""
-You are a CBT-informed AI therapist. Analyze the user input and generate ONE thoughtful insight for each of these categories:
-- Good or Bad Thinking Patterns
-- Cognitive Distortions
-- Defense Mechanisms
-- Maladaptive Patterns
-- Inferred Beliefs / Self-Schema
-- Emotional Regulation Patterns
-- Axioms / Core Beliefs
-
-Each insight must follow this format:
-[Category]:
-- Description: short=0.4, long=0.2
 
 def analyze_user_input(
     user_text: str,
-    about_user: AboutUser
+    about_user_memory: Dict[str, Any]
 ) -> Dict[str, Any]:
-    """
-    Analyze user input and return insights about their emotional state and personality.
-    
-    Args:
-        user_text: The text input from the user
-        about_user: The current AboutUser object containing existing insights
-        
-    Returns:
-        Dict containing:
-            - emotions: Dictionary of detected emotions and their intensities
-            - about_user: Updated AboutUser object with new insights
-            - psychoanalysis: Dictionary of psychological insights
-    """
-    # Get emotion classification
     transformer_output = classifier(user_text)[0]
     emotions = {item['label']: round(item['score'], 4) for item in transformer_output if item['score'] > 0.01}
-    
-    # Update about_user insights
-    updated_about_user = update_about_user_memory(user_text, emotions, about_user)
-    
-    # Get psychoanalysis insights
-    psychoanalysis = update_psychoanalysis_memory(user_text, emotions)
+    about_user = update_about_user_memory(user_text, emotions, about_user_memory)
+    psycho = update_psychoanalysis_memory(user_text, emotions)
     
     return {
+        "psychoanalysis": psycho,
         "emotions": emotions,
-        "about_user": updated_about_user,
-        "psychoanalysis": psychoanalysis
+        "about_user": about_user,
+        "updated_global_memory": global_memory
     }
-
-if __name__ == "__main__":
-    result = analyze_user_input(
-        user_text="I feel like everything I do is wrong.",
-        short_term_memory="", long_term_memory="",
-        global_memory={}, about_user_memory={}
-    )
-    print(json.dumps(result, indent=2))

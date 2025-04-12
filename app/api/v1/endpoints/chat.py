@@ -29,13 +29,15 @@ async def send_message(
 
         # Store the conversation in MongoDB
         chat_collection = mongodb.get_collection("chats")
-        chat_message = ChatMessage(
-            user_id=str(current_user["_id"]),
-            message=chat_request.message,
-            response=ai_response
-        )
+        chat_data = {
+            "user_id": str(current_user["_id"]),
+            "message": chat_request.message,
+            "emotion": chat_request.emotion,
+            "response": ai_response,
+            "created_at": datetime.utcnow()
+        }
         
-        await chat_collection.insert_one(chat_message.model_dump(by_alias=True))
+        await chat_collection.insert_one(chat_data)
 
         return ChatResponse(
             message=chat_request.message,

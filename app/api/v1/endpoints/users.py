@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.security import get_current_user, get_password_hash
-from app.models.user import User, UserCreate, UserUpdate, UserProfile
+from app.models.user import User, UserCreate, UserUpdate, UserProfile, StarterAnswers
 from app.models.about import AboutUser
 from app.db.mongodb import mongodb
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson import ObjectId
 from typing import Optional
 
@@ -116,4 +116,48 @@ async def get_user_about(current_user: dict = Depends(get_current_user)):
     user = await users_collection.find_one({"_id": current_user["_id"]})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user.get("about", {}) 
+    return user.get("about", {})
+
+@router.post("/me/starter-answers", response_model=User)
+async def submit_starter_answers(
+    answers: StarterAnswers,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Submit initial answers from the user and update their profile.
+    This endpoint collects basic information about the user and updates their profile accordingly.
+    """
+    users_collection = mongodb.get_collection("users")
+    
+    # Calculate date of birth from age
+    current_year = datetime.utcnow().year
+    birth_year = current_year - answers.age
+    date_of_birth = datetime(birth_year, 1, 1)  # Using January 1st as default date
+    
+    # Create or update user profile
+    profile_data = {
+        "preferred_name": answers.preferred_name,
+        "gender": answers.gender,
+        "date_of_birth": date_of_birth,
+        "occupation": answers.occupation,
+        "has_therapy_experience": answers.has_therapy_experience,
+        "last_updated": datetime.utcnow()
+    }
+    
+    # Update user document
+    update_data = {
+        "profile": profile_data,
+        "updated_at": datetime.utcnow()
+    }
+    
+    result = await users_collection.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Return updated user
+    updated_user = await users_collection.find_one({"_id": current_user["_id"]})
+    return updated_user 

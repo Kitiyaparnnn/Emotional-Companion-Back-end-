@@ -1,7 +1,30 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, GetJsonSchemaHandler
 from typing import List, Optional, Annotated, Dict
 from datetime import datetime
-from .user import PyObjectId, Emotion
+from bson import ObjectId
+from pydantic.json_schema import JsonSchemaValue
+from .user import Emotion
+
+class PyObjectId(str):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v, handler=None):
+        if isinstance(v, ObjectId):
+            return str(v)
+        if isinstance(v, str):
+            return v
+        raise ValueError("Invalid ObjectId")
+
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls,
+        _schema_generator: GetJsonSchemaHandler,
+        _field_name: str | None = None,
+    ) -> JsonSchemaValue:
+        return {"type": "string"}
 
 class Message(BaseModel):
     role: str
@@ -16,15 +39,13 @@ class Message(BaseModel):
     }
 
 class ChatMessage(BaseModel):
-    id: Annotated[PyObjectId, Field(default_factory=PyObjectId, alias="_id")]
     user_id: str
     message: str
+    emotion: Optional[Emotion] = None
     response: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
         "json_encoders": {
             datetime: lambda v: v.isoformat()
         }
@@ -32,6 +53,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
+    emotion: Optional[Emotion] = None
 
 class ChatResponse(BaseModel):
     message: str
@@ -46,9 +68,12 @@ class ChatSession(BaseModel):
     daily_summary: Optional[str] = None
     overall_emotion: Emotion
     emotion_history: List[Emotion] = []
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     model_config = {
         "json_encoders": {
+            ObjectId: str,
             datetime: lambda v: v.isoformat()
         }
     }

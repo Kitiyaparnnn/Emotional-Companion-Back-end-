@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import timedelta, datetime
 from app.core.security import create_access_token, verify_password, get_password_hash
-from app.core.oauth import GoogleAuth, SpotifyAuth
 from app.models.user import UserCreate, User, Token
 from app.db.mongodb import mongodb
 from app.core.config import settings
@@ -43,27 +42,4 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     access_token = create_access_token(
         data={"sub": str(user["_id"])}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@router.post("/google")
-async def google_auth(token: str):
-    try:
-        user_info = await GoogleAuth.verify_token(token)
-        # Handle user creation/login with Google info
-        return {"message": "Google authentication successful", "user_info": user_info}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.get("/spotify")
-async def spotify_auth():
-    auth_url = SpotifyAuth.get_auth_url()
-    return {"auth_url": auth_url}
-
-@router.get("/spotify/callback")
-async def spotify_callback(code: str):
-    try:
-        token_info = SpotifyAuth.get_access_token(code)
-        # Handle user creation/login with Spotify info
-        return {"message": "Spotify authentication successful", "token_info": token_info}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) 
+    return {"access_token": access_token, "token_type": "bearer"} 

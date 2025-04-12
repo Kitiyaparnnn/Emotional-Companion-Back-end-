@@ -9,8 +9,6 @@ from app.models.about import AboutUser
 class Gender(str, Enum):
     MALE = "male"
     FEMALE = "female"
-    NON_BINARY = "non_binary"
-    OTHER = "other"
     PREFER_NOT_TO_SAY = "prefer_not_to_say"
 
 class Emotion(str, Enum):
@@ -46,6 +44,23 @@ class PyObjectId(str):
     ) -> JsonSchemaValue:
         return {"type": "string", "format": "objectid"}
 
+class StarterAnswers(BaseModel):
+    preferred_name: str
+    age: int
+    gender: Gender
+    occupation: str
+    current_mood_scale: int = Field(ge=1, le=10)
+    current_emotion: Emotion
+    topic_of_interest: str
+    has_therapy_experience: bool
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    model_config = {
+        "json_encoders": {
+            datetime: lambda v: v.isoformat()
+        }
+    }
+
 class UserBase(BaseModel):
     email: EmailStr
     name: str
@@ -61,7 +76,7 @@ class UserUpdate(BaseModel):
 class UserProfile(BaseModel):
     preferred_name: Optional[str] = None
     gender: Optional[Gender] = None
-    date_of_birth: Optional[datetime] = None
+    age: int
     occupation: Optional[str] = None
     has_therapy_experience: Optional[bool] = None
     last_updated: datetime = Field(default_factory=datetime.utcnow)

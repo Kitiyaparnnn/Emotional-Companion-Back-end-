@@ -5,9 +5,8 @@ from app.api.v1.api import api_router
 from app.db.mongodb import mongodb
 
 app = FastAPI(
-    title="Emotional Companion API",
-    description="Backend API for Emotional Companion Application",
-    version="1.0.0"
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
 # CORS middleware configuration
@@ -20,15 +19,15 @@ app.add_middleware(
 )
 
 @app.on_event("startup")
-async def startup_db_client():
+async def startup_event():
     await mongodb.connect_to_mongo()
 
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_event():
     await mongodb.close_mongo_connection()
 
 # Include API router
-app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
