@@ -1,14 +1,19 @@
-version: '3.8'
-
 services:
   app:
     build: .
     ports:
-      - "0.0.0.0:8000:8000"
+      - "8000:8000"
     volumes:
       - .:/app
-    env_file:
-      - .env
+    environment:
+      - MONGODB_URL=mongodb+srv://AI_Emotional:ai_emotional@cluster0.pjpoz4p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - DATABASE_NAME=${DATABASE_NAME}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     networks:
       - app-network
     restart: always

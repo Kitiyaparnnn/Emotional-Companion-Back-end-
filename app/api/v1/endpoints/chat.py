@@ -4,18 +4,19 @@ from app.models.chat import ChatMessage, ChatRequest, ChatResponse, Message, Cha
 from app.db.mongodb import mongodb
 from app.core.config import settings
 from datetime import datetime, timedelta
-import openai
 from typing import List
 from bson import ObjectId
+from random import choice
 
 router = APIRouter()
 
-# Configure OpenAI
-openai.api_key = settings.OPENAI_API_KEY
-
-SYSTEM_MESSAGE = """You are an empathetic AI companion who helps users process their emotions and thoughts. 
-Your responses should be supportive, understanding, and promote emotional well-being. 
-Provide thoughtful insights and gentle guidance while maintaining a warm and caring tone."""
+SYSTEM_RESPONSES = [
+    "I understand how you're feeling. Would you like to tell me more about that?",
+    "That sounds challenging. How are you coping with it?",
+    "I'm here to listen. What else is on your mind?",
+    "Thank you for sharing that with me. How does it make you feel?",
+    "I appreciate you opening up about this. What support do you need right now?"
+]
 
 @router.post("/send", response_model=ChatResponse)
 async def send_message(
@@ -23,22 +24,8 @@ async def send_message(
     current_user: dict = Depends(get_current_user)
 ):
     try:
-        # Prepare the messages for the API
-        messages: List[Message] = [
-            Message(role="system", content=SYSTEM_MESSAGE),
-            Message(role="user", content=chat_request.message)
-        ]
-
-        # Call OpenAI API
-        response = openai.ChatCompletion.create(
-            model=settings.OPENAI_MODEL,
-            messages=[{"role": msg.role, "content": msg.content} for msg in messages],
-            max_tokens=settings.MAX_TOKENS,
-            temperature=settings.TEMPERATURE,
-        )
-
-        # Extract the response
-        ai_response = response.choices[0].message.content
+        # Simple response selection (you can make this more sophisticated later)
+        ai_response = choice(SYSTEM_RESPONSES)
 
         # Store the conversation in MongoDB
         chat_collection = mongodb.get_collection("chats")
@@ -55,11 +42,6 @@ async def send_message(
             response=ai_response
         )
 
-    except openai.error.OpenAIError as e:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Error from OpenAI API: {str(e)}"
-        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

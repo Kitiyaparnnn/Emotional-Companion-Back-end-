@@ -5,7 +5,7 @@ A FastAPI-based backend service for an emotional companion chatbot that provides
 ## Features
 
 - User authentication with JWT
-- Chat functionality using OpenAI GPT
+- Empathetic chat responses
 - Chat history tracking
 - MongoDB integration
 - Docker support
@@ -16,7 +16,6 @@ A FastAPI-based backend service for an emotional companion chatbot that provides
 - Python 3.11+
 - MongoDB
 - Docker and Docker Compose
-- OpenAI API key
 
 ## Setup
 
@@ -32,7 +31,6 @@ MONGODB_URL=mongodb://localhost:27017
 DATABASE_NAME=emotional_companion
 JWT_SECRET_KEY=your-secret-key
 ENCRYPTION_KEY=your-encryption-key-32bytes-long!!
-OPENAI_API_KEY=your-openai-api-key
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```

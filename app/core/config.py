@@ -19,12 +19,6 @@ class Settings(BaseSettings):
     
     # Encryption key for sensitive data
     ENCRYPTION_KEY: str = "your-encryption-key-32bytes-long!!"  # 32 bytes for Fernet
-    
-    # OpenAI settings
-    OPENAI_API_KEY: str = ""
-    OPENAI_MODEL: str = "gpt-3.5-turbo"
-    MAX_TOKENS: int = 150
-    TEMPERATURE: float = 0.7
 
     class Config:
         env_file = ".env"
