@@ -1,11 +1,19 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Annotated
+from typing import List, Optional, Annotated, Dict
 from datetime import datetime
-from .user import PyObjectId
+from .user import PyObjectId, Emotion
 
 class Message(BaseModel):
     role: str
     content: str
+    timestamp: datetime
+    emotion: Emotion
+
+    model_config = {
+        "json_encoders": {
+            datetime: lambda v: v.isoformat()
+        }
+    }
 
 class ChatMessage(BaseModel):
     id: Annotated[PyObjectId, Field(default_factory=PyObjectId, alias="_id")]
@@ -36,6 +44,8 @@ class ChatSession(BaseModel):
     end_time: Optional[datetime] = None
     messages: List[Message]
     daily_summary: Optional[str] = None
+    overall_emotion: Emotion
+    emotion_history: List[Emotion] = []
 
     model_config = {
         "json_encoders": {
@@ -49,7 +59,7 @@ class SentimentLog(BaseModel):
     user_id: str
     timestamp: datetime
     sentiment_score: float
-    emotion_tags: List[str]
+    emotion_tags: List[Emotion]
     context: Optional[dict] = None
 
     model_config = {

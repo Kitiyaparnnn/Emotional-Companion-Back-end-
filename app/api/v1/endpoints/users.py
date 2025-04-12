@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.security import get_current_user, get_password_hash
-from app.models.user import User, UserCreate, UserUpdate
+from app.models.user import User, UserCreate, UserUpdate, UserProfile
+from app.models.about import AboutUser
 from app.db.mongodb import mongodb
 from datetime import datetime
 from bson import ObjectId
+from typing import Optional
 
 router = APIRouter()
 
@@ -30,7 +32,11 @@ async def create_user(user: UserCreate):
 
 @router.get("/me", response_model=User)
 async def get_current_user_info(current_user: dict = Depends(get_current_user)):
-    return current_user
+    users_collection = mongodb.get_collection("users")
+    user = await users_collection.find_one({"_id": current_user["_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 @router.put("/me", response_model=User)
 async def update_user(
@@ -38,23 +44,76 @@ async def update_user(
     current_user: dict = Depends(get_current_user)
 ):
     users_collection = mongodb.get_collection("users")
-    
-    # Update user
     update_data = user_update.model_dump(exclude_unset=True)
+    
     if "password" in update_data:
         update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
+    
     update_data["updated_at"] = datetime.utcnow()
     
     result = await users_collection.update_one(
-        {"_id": ObjectId(current_user["_id"])},
+        {"_id": current_user["_id"]},
         {"$set": update_data}
     )
     
     if result.modified_count == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=404, detail="User not found")
     
-    updated_user = await users_collection.find_one({"_id": ObjectId(current_user["_id"])})
-    return updated_user 
+    updated_user = await users_collection.find_one({"_id": current_user["_id"]})
+    return updated_user
+
+@router.put("/me/profile", response_model=User)
+async def update_user_profile(
+    profile_update: UserProfile,
+    current_user: dict = Depends(get_current_user)
+):
+    users_collection = mongodb.get_collection("users")
+    update_data = {"profile": profile_update.model_dump(exclude_unset=True)}
+    update_data["updated_at"] = datetime.utcnow()
+    
+    result = await users_collection.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    updated_user = await users_collection.find_one({"_id": current_user["_id"]})
+    return updated_user
+
+@router.get("/me/profile", response_model=UserProfile)
+async def get_user_profile(current_user: dict = Depends(get_current_user)):
+    users_collection = mongodb.get_collection("users")
+    user = await users_collection.find_one({"_id": current_user["_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user.get("profile", {})
+
+@router.put("/me/about", response_model=User)
+async def update_user_about(
+    about_update: AboutUser,
+    current_user: dict = Depends(get_current_user)
+):
+    users_collection = mongodb.get_collection("users")
+    update_data = {"about": about_update.model_dump(exclude_unset=True)}
+    update_data["updated_at"] = datetime.utcnow()
+    
+    result = await users_collection.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    updated_user = await users_collection.find_one({"_id": current_user["_id"]})
+    return updated_user
+
+@router.get("/me/about", response_model=AboutUser)
+async def get_user_about(current_user: dict = Depends(get_current_user)):
+    users_collection = mongodb.get_collection("users")
+    user = await users_collection.find_one({"_id": current_user["_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user.get("about", {}) 

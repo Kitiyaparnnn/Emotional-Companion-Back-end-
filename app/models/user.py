@@ -1,8 +1,26 @@
 from pydantic import BaseModel, EmailStr, Field, GetJsonSchemaHandler
-from typing import Optional, Any, Dict, Annotated
+from typing import Optional, Any, Dict, Annotated, List
 from datetime import datetime
 from bson import ObjectId
 from pydantic.json_schema import JsonSchemaValue
+from enum import Enum
+from app.models.about import AboutUser
+
+class Gender(str, Enum):
+    MALE = "male"
+    FEMALE = "female"
+    NON_BINARY = "non_binary"
+    OTHER = "other"
+    PREFER_NOT_TO_SAY = "prefer_not_to_say"
+
+class Emotion(str, Enum):
+    ANGRY = "angry"
+    DISGUST = "disgust"
+    FEAR = "fear"
+    JOY = "joy"
+    NEUTRAL = "neutral"
+    SADNESS = "sadness"
+    SURPRISE = "surprise"
 
 class PyObjectId(str):
     @classmethod
@@ -40,11 +58,27 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     password: Optional[str] = None
 
+class UserProfile(BaseModel):
+    preferred_name: Optional[str] = None
+    gender: Optional[Gender] = None
+    date_of_birth: Optional[datetime] = None
+    occupation: Optional[str] = None
+    has_therapy_experience: Optional[bool] = None
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+
+    model_config = {
+        "json_encoders": {
+            datetime: lambda v: v.isoformat()
+        }
+    }
+
 class User(UserBase):
     id: Annotated[PyObjectId, Field(default_factory=PyObjectId, alias="_id")]
     hashed_password: str
     created_at: datetime
     updated_at: datetime
+    profile: Optional[UserProfile] = None
+    about: Optional[AboutUser] = None
 
     model_config = {
         "json_encoders": {
@@ -59,3 +93,4 @@ class User(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str 
+
