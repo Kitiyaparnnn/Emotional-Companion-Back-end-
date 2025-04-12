@@ -129,10 +129,12 @@ async def submit_starter_answers(
     """
     users_collection = mongodb.get_collection("users")
     
-    # Calculate date of birth from age
-    current_year = datetime.utcnow().year
-    birth_year = current_year - answers.age
-    date_of_birth = datetime(birth_year, 1, 1)  # Using January 1st as default date
+    # Calculate date of birth from age if provided
+    date_of_birth = None
+    if isinstance(answers.age, int):
+        current_year = datetime.utcnow().year
+        birth_year = current_year - answers.age
+        date_of_birth = datetime(birth_year, 1, 1)  # Using January 1st as default date
     
     # Create or update user profile
     profile_data = {
@@ -140,18 +142,23 @@ async def submit_starter_answers(
         "gender": answers.gender,
         "date_of_birth": date_of_birth,
         "occupation": answers.occupation,
+        "current_mood": answers.current_mood_scale,
+        "current_emotion": answers.current_emotion,
+        "preferred_topic": answers.topic_of_interest,
         "has_therapy_experience": answers.has_therapy_experience,
-        "last_updated": datetime.utcnow()
+        "last_updated": answers.timestamp
     }
     
     # Update user document
     update_data = {
         "profile": profile_data,
-        "updated_at": datetime.utcnow()
+        "updated_at": datetime.utcnow(),
+        "onboarding_completed": answers.completed
     }
     
+    # The user ID is already an ObjectId in current_user["_id"]
     result = await users_collection.update_one(
-        {"_id": current_user["_id"]},
+        {"_id": ObjectId(current_user["_id"])},  # Convert string ID to ObjectId
         {"$set": update_data}
     )
     
@@ -159,5 +166,5 @@ async def submit_starter_answers(
         raise HTTPException(status_code=404, detail="User not found")
     
     # Return updated user
-    updated_user = await users_collection.find_one({"_id": current_user["_id"]})
+    updated_user = await users_collection.find_one({"_id": ObjectId(current_user["_id"])})  # Convert string ID to ObjectId
     return updated_user 

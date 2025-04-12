@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, GetJsonSchemaHandler
-from typing import Optional, Any, Dict, Annotated, List
+from typing import Optional, Any, Dict, Annotated, List, Literal, Union
 from datetime import datetime
 from bson import ObjectId
 from pydantic.json_schema import JsonSchemaValue
@@ -9,6 +9,8 @@ from app.models.about import AboutUser
 class Gender(str, Enum):
     MALE = "male"
     FEMALE = "female"
+    NON_BINARY = "nonbinary"
+    SELF_DESCRIBE = "self-describe"
     PREFER_NOT_TO_SAY = "prefer_not_to_say"
 
 class Emotion(str, Enum):
@@ -45,15 +47,17 @@ class PyObjectId(str):
         return {"type": "string", "format": "objectid"}
 
 class StarterAnswers(BaseModel):
-    preferred_name: str
-    age: int
-    gender: Gender
-    occupation: str
-    current_mood_scale: int = Field(ge=1, le=10)
-    current_emotion: Emotion
-    topic_of_interest: str
-    has_therapy_experience: bool
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    """Model for initial user answers during onboarding"""
+    preferred_name: str = Field(..., description="User's preferred name or nickname")
+    age: Union[int, Literal["Prefer not to say"]] = Field(..., description="User's age or preference not to disclose")
+    gender: Literal["male", "female", "nonbinary", "self-describe", "prefer_not_to_say"] = Field(..., description="User's gender identity")
+    occupation: str = Field(..., description="User's occupation")
+    current_mood_scale: int = Field(..., ge=1, le=10, description="User's current mood on a scale of 1-10")
+    current_emotion: Literal["angry", "disgust", "fear", "joy", "neutral", "sadness", "surprise"] = Field(..., description="User's primary emotion")
+    topic_of_interest: Literal["Work", "Relationships", "Health", "Goals", "Stress", "Happiness", "Other"] = Field(..., description="User's preferred topic for discussion")
+    has_therapy_experience: bool = Field(..., description="Previous experience with mental health or therapy apps")
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="When the onboarding was completed")
+    completed: bool = Field(default=True, description="Whether onboarding was fully completed")
 
     model_config = {
         "json_encoders": {
@@ -75,9 +79,12 @@ class UserUpdate(BaseModel):
 
 class UserProfile(BaseModel):
     preferred_name: Optional[str] = None
-    gender: Optional[Gender] = None
-    age: int
-    occupation: Optional[str] = None
+    gender: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
+    life_focus: Optional[str] = None
+    current_mood: Optional[int] = None
+    current_emotion: Optional[str] = None
+    preferred_topic: Optional[str] = None
     has_therapy_experience: Optional[bool] = None
     last_updated: datetime = Field(default_factory=datetime.utcnow)
 
