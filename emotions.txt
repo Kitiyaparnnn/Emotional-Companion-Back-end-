@@ -1,4 +1,6 @@
 {
-  "joy": 0.9619,
-  "surprise": 0.0296
+  "Happiness": 1.0,
+  "Confidence": 0.9,
+  "Excitement": 0.8,
+  "Contentment": 0.7
 }

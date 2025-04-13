@@ -53,13 +53,35 @@ psycho_profile = {
 
 # === Emotion Analysis ===
 def analyze_emotions(user_input: str) -> Dict[str, float]:
-    transformer_output = emotion_classifier(user_input)
-    emotions = {item['label']: round(item['score'], 4) for item in transformer_output[0] if item['score'] > 0.01}
+    """
+    Analyze emotions in user input using OpenAI's API
+    """
+    try:
+        prompt = f"""
+Analyze the emotions in the following text and provide a confidence score for each emotion (0.0 to 1.0):
+"{user_input}"
 
-    with open("emotions.txt", "w", encoding="utf-8") as f:
-        json.dump(emotions, f, indent=2)
+Format the response as a JSON object with emotion names as keys and confidence scores as values.
+"""
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an emotion analysis expert."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=200
+        )
+        
+        emotions = json.loads(response.choices[0].message.content)
+        
+        with open("emotions.txt", "w", encoding="utf-8") as f:
+            json.dump(emotions, f, indent=2)
 
-    return emotions
+        return emotions
+    except Exception as e:
+        logger.error(f"Error in analyze_emotions: {str(e)}")
+        return {}
 
 # === RAG Retrieval ===
 def retrieve_context(query: str, k: int = 3) -> List[str]:
@@ -95,7 +117,11 @@ def retrieve_context(query: str, k: int = 3) -> List[str]:
 
 # === Update Psychoanalytic Profile ===
 def update_psycho_profile(user_input: str, context_chunks: List[str]) -> None:
-    prompt = f"""
+    """
+    Update psychoanalytic profile based on user input and context
+    """
+    try:
+        prompt = f"""
 You are a psychoanalyst AI. Based on the user input and context, provide:
 1. Good/Bad thinking patterns
 2. Axioms or core beliefs
@@ -111,22 +137,23 @@ Input:
 Context:
 {''.join(context_chunks[:3])}
 """
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a psychoanalytic expert."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=500
+        )
+        
+        psychoanalysis_output = json.loads(response.choices[0].message.content)
+        psycho_profile["psychoanalysis"] = psychoanalysis_output
 
-    # Simulate psychoanalytic inference
-    psychoanalysis_output = {
-        "thinking_patterns": {"User demonstrates proactive optimism.": {"short_term": 0.7, "long_term": 0.6}},
-        "axioms": {"Believes effort leads to success.": {"short_term": 0.8, "long_term": 0.7}},
-        "cognitive_distortions": {"Possible minimization of potential risks.": {"short_term": 0.3, "long_term": 0.2}},
-        "defense_mechanisms": {"Might intellectualize emotions when excited.": {"short_term": 0.4, "long_term": 0.3}},
-        "maladaptive_patterns": {"Mild dependency on external validation for emotional uplift.": {"short_term": 0.35, "long_term": 0.25}},
-        "inferred_beliefs": {"Views emotional connection as part of personal success.": {"short_term": 0.5, "long_term": 0.4}},
-        "emotional_regulation": {"Utilizes positive feedback loops to maintain mood.": {"short_term": 0.6, "long_term": 0.5}}
-    }
-
-    psycho_profile["psychoanalysis"] = psychoanalysis_output
-
-    with open("psychoanalysis.txt", "w", encoding="utf-8") as f:
-        json.dump(psycho_profile["psychoanalysis"], f, indent=2)
+        with open("psychoanalysis.txt", "w", encoding="utf-8") as f:
+            json.dump(psycho_profile["psychoanalysis"], f, indent=2)
+    except Exception as e:
+        logger.error(f"Error in update_psycho_profile: {str(e)}")
 
 # === Expose profile for external use ===
 def get_psycho_profile() -> Dict[str, Dict]:
