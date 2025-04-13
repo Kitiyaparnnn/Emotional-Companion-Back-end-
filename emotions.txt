@@ -1,6 +1,6 @@
 {
   "Happiness": 1.0,
-  "Confidence": 0.9,
   "Excitement": 0.8,
+  "Confidence": 0.9,
   "Contentment": 0.7
 }

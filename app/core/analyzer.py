@@ -4,7 +4,6 @@ import json
 import numpy as np
 import faiss
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 from typing import List, Dict
 import openai
@@ -21,7 +20,6 @@ load_dotenv()
 
 # Initialize models
 emotion_classifier = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base", top_k=None)
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Load API key from .env file
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
