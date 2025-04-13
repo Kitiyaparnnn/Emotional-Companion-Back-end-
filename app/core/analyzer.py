@@ -4,7 +4,6 @@ import json
 import numpy as np
 import faiss
 from dotenv import load_dotenv
-from transformers import pipeline
 from typing import List, Dict
 import openai
 from datetime import datetime
