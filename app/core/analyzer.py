@@ -10,6 +10,7 @@ from typing import List, Dict
 import openai
 from datetime import datetime
 import logging
+from functools import lru_cache
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -26,16 +27,23 @@ embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 logger.debug(f"OpenAI API Key loaded: {os.getenv('OPENAI_API_KEY')[:5]}...")
 
-# Load FAISS index and metadata
-try:
-    faiss_index = faiss.read_index("app/core/faiss_index/vector.index")
-    with open("app/core/faiss_index/metadata.json", "r", encoding="utf-8") as f:
-        metadata = json.load(f)
-    logger.debug("FAISS index and metadata loaded successfully")
-except Exception as e:
-    logger.warning(f"Failed to load FAISS index: {str(e)}")
-    faiss_index = None
-    metadata = {}
+# Initialize FAISS index lazily
+_faiss_index = None
+_metadata = {}
+
+def get_faiss_index():
+    global _faiss_index, _metadata
+    if _faiss_index is None:
+        try:
+            _faiss_index = faiss.read_index("faiss_index/vector.index")
+            with open("faiss_index/metadata.json", "r") as f:
+                _metadata = json.load(f)
+            logger.debug("FAISS index and metadata loaded successfully")
+        except Exception as e:
+            logger.warning(f"Failed to load FAISS index: {str(e)}")
+            _faiss_index = None
+            _metadata = {}
+    return _faiss_index, _metadata
 
 # Initialize psychoanalytic profile
 psycho_profile = {
@@ -54,17 +62,21 @@ def analyze_emotions(user_input: str) -> Dict[str, float]:
     return emotions
 
 # === RAG Retrieval ===
-def retrieve_context(query: str, k: int = 5) -> List[str]:
-    if faiss_index is None:
+def retrieve_context(query: str, k: int = 3) -> List[str]:
+    """
+    Retrieve relevant context from memory using semantic search
+    """
+    index, metadata = get_faiss_index()
+    if index is None:
         logger.warning("FAISS index is not loaded, returning empty list")
         return []
-
+    
     try:
         query_embedding = get_embedding(query)
         query_embedding = np.array(query_embedding).astype('float32')
         query_embedding = query_embedding.reshape(1, -1)
         
-        distances, indices = faiss_index.search(query_embedding, k)
+        distances, indices = index.search(query_embedding, k)
         results = []
         
         for i in range(len(indices[0])):
@@ -120,9 +132,10 @@ Context:
 def get_psycho_profile() -> Dict[str, Dict]:
     return psycho_profile
 
+@lru_cache(maxsize=100)
 def get_embedding(text: str) -> List[float]:
     """
-    Get embedding for text using OpenAI's API
+    Get embedding for text using OpenAI's API with caching
     """
     try:
         response = client.embeddings.create(
