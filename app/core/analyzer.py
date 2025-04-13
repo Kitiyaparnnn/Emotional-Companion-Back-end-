@@ -18,9 +18,6 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 
-# Initialize models
-emotion_classifier = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base", top_k=None)
-
 # Load API key from .env file
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 logger.debug(f"OpenAI API Key loaded: {os.getenv('OPENAI_API_KEY')[:5]}...")
