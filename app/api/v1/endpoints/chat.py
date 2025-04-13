@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from typing import List
 from bson import ObjectId
 from random import choice
+from app.core.analyzer import analyze_emotions, retrieve_context, update_psycho_profile, get_psycho_profile
+from app.core.responder import generate_response
 
 router = APIRouter()
 
@@ -24,8 +26,34 @@ async def send_message(
     current_user: dict = Depends(get_current_user)
 ):
     try:
-        # Simple response selection (you can make this more sophisticated later)
-        ai_response = choice(SYSTEM_RESPONSES)
+        # Get user input
+        user_input = chat_request.message
+
+        # Check if user wants to exit
+        if user_input.lower() in ["quit", "exit"]:
+            return ChatResponse(
+                message=user_input,
+                response="👋 Goodbye. Take care."
+            )
+
+        # Step 1: Analyze emotions
+        emotions = analyze_emotions(user_input)
+
+        # Step 2: Retrieve relevant context via RAG
+        context_chunks = []
+        # try:
+        #     context_chunks = retrieve_context(user_input)
+        # except (ValueError, Exception) as e:
+        #     print(f"[Error] Context retrieval failed: {str(e)}")
+        #     context_chunks = []
+
+        # Step 3: Update psychoanalytic profile based on input and context
+        update_psycho_profile(user_input, context_chunks)
+
+        # Step 4: Generate response using profile and user input
+        psycho_data = get_psycho_profile()
+        ai_response = generate_response(user_input, psycho_data, context_chunks)
+        print(f"💬 AI Response: {ai_response}")
 
         # Store the conversation in MongoDB
         chat_collection = mongodb.get_collection("chats")

@@ -1,0 +1,44 @@
+{
+  "thinking_patterns": {
+    "User demonstrates proactive optimism.": {
+      "short_term": 0.7,
+      "long_term": 0.6
+    }
+  },
+  "axioms": {
+    "Believes effort leads to success.": {
+      "short_term": 0.8,
+      "long_term": 0.7
+    }
+  },
+  "cognitive_distortions": {
+    "Possible minimization of potential risks.": {
+      "short_term": 0.3,
+      "long_term": 0.2
+    }
+  },
+  "defense_mechanisms": {
+    "Might intellectualize emotions when excited.": {
+      "short_term": 0.4,
+      "long_term": 0.3
+    }
+  },
+  "maladaptive_patterns": {
+    "Mild dependency on external validation for emotional uplift.": {
+      "short_term": 0.35,
+      "long_term": 0.25
+    }
+  },
+  "inferred_beliefs": {
+    "Views emotional connection as part of personal success.": {
+      "short_term": 0.5,
+      "long_term": 0.4
+    }
+  },
+  "emotional_regulation": {
+    "Utilizes positive feedback loops to maintain mood.": {
+      "short_term": 0.6,
+      "long_term": 0.5
+    }
+  }
+}

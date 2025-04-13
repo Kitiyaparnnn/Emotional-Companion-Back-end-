@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     SPOTIFY_CLIENT_ID: Optional[str] = None
     SPOTIFY_CLIENT_SECRET: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
     
     # Encryption key for sensitive data
     ENCRYPTION_KEY: str = "your-encryption-key-32bytes-long!!"  # 32 bytes for Fernet

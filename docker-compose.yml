@@ -6,7 +6,7 @@ services:
     volumes:
       - .:/app
     environment:
-      - MONGODB_URL=mongodb+srv://AI_Emotional:ai_emotional@cluster0.pjpoz4p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - MONGODB_URL=${MONGODB_URL}
       - DATABASE_NAME=${DATABASE_NAME}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - JWT_ALGORITHM=HS256
