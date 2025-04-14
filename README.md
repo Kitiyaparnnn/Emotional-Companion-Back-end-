@@ -1,6 +1,16 @@
 # Emotional Companion Backend
 
-A FastAPI-based backend service for an emotional companion chatbot that provides empathetic responses and emotional support.
+A FastAPI-based backend service for an **Emotional Companion chatbot** that provides empathetic responses and emotional support.
+
+TEAM: Emotional Companion
+
+MEMBER: Mich Baldonado, Kitiyaporn Takham, Kristi, FNU Renu
+
+## Resources
+- Presentation slide: https://docs.google.com/presentation/d/1FBNdxEIudpJs6W_kRj7lG0HO_aS5iQYFjExGIlmrshQ/edit?usp=sharing
+- Emotional Model: https://github.com/micahbaldonado/AI-Therapist
+- Front-end: https://gitlab.com/kristibaishya/ai-emotional-companion.git
+- Back-end: https://github.com/Kitiyaparnnn/Emotional-Companion-Back-end-.git
 
 ## Features
 
@@ -84,6 +94,4 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## License
-
-MIT License
+## 
