@@ -37,7 +37,7 @@ cd emotional-companion-backend
 
 2. Create a `.env` file in the root directory with the following variables:
 ```env
-MONGODB_URL=mongodb://localhost:27017
+MONGODB_URL=your-mongoDB-connection
 DATABASE_NAME=emotional_companion
 JWT_SECRET_KEY=your-secret-key
 ENCRYPTION_KEY=your-encryption-key-32bytes-long!!
