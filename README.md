@@ -6,6 +6,13 @@ TEAM: Emotional Companion
 
 MEMBER: Mich Baldonado, Kitiyaporn Takham, Kristi, FNU Renu
 
+<img width="371" height="192" alt="Screenshot 2568-11-21 at 22 16 29" src="https://github.com/user-attachments/assets/d75f8657-6487-44b3-a3fc-1c62b0022a65" />
+
+<img width="368" height="191" alt="Screenshot 2568-11-21 at 22 16 38" src="https://github.com/user-attachments/assets/7c9cd2e1-0fd3-45c0-9537-69ce1aa26178" />
+
+<img width="368" height="191" alt="Screenshot 2568-11-21 at 22 16 46" src="https://github.com/user-attachments/assets/09058c11-7551-4731-b455-dda441514d4c" />
+
+
 ## Resources
 - Presentation slide: https://docs.google.com/presentation/d/1FBNdxEIudpJs6W_kRj7lG0HO_aS5iQYFjExGIlmrshQ/edit?usp=sharing
 - Emotional Model: https://github.com/micahbaldonado/AI-Therapist
